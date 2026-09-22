@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Edukasi Lalu Lintas: Simpang Empat & Bundaran</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            background-color: #2c3e50;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            color: white;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            margin-bottom: 5px;
+            font-size: 20px;
+            text-align: center;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            height: 400px;
+            background-color: #34495e;
+            border: 4px solid #f1c40f;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        /* Tampilan Jalan */
+        .road-h {
+            position: absolute;
+            top: 130px;
+            width: 100%;
+            height: 140px;
+            background-color: #555;
+            border-top: 3px dashed #fff;
+            border-bottom: 3px dashed #fff;
+        }
+
+        .road-v {
+            position: absolute;
+            left: 130px;
+            width: 140px;
+            height: 100%;
+            background-color: #555;
+            border-left: 3px dashed #fff;
+            border-right: 3px dashed #fff;
+        }
+
+        /* Bundaran Tengah */
+        .roundabout {
+            position: absolute;
+            top: 160px;
+            left: 160px;
+            width: 80px;
+            height: 80px;
+            background-color: #27ae60;
+            border: 4px dashed #f39c12;
+            border-radius: 50%;
+            z-index: 2;
+        }
+
+        /* Lampu Lalu Lintas */
+        .traffic-light {
+            position: absolute;
+            width: 24px;
+            height: 56px;
+            background-color: #111;
+            border: 2px solid #fff;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            padding: 2px;
+            z-index: 5;
+        }
+
+        .light {
+            width: 12px;
+            height: 12px;
+            background-color: #555;
+            border-radius: 50%;
+        }
+
+        /* Posisi Lampu */
+        #tl-north { top: 95px; left: 175px; }
+        #tl-south { bottom: 95px; right: 175px; }
+        #tl-east { top: 175px; right: 95px; }
+        #tl-west { bottom: 175px; left: 95px; }
+
+        /* Panel Informasi */
+        #ui-panel {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .stat-box {
+            background: #222;
+            padding: 6px 12px;
+            border-radius: 5px;
+            border: 1px solid #7f8c8d;
+        }
+
+        #instruction {
+            margin: 8px 0;
+            font-size: 12px;
+            color: #bdc3c7;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        /* Pemain / Pejalan Kaki */
+        .character {
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background-color: #e74c3c;
+            border-radius: 50%;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            box-shadow: 0 0 5px #000;
+        }
+
+        /* Tombol Kontrol Layar HP */
+        #mobile-controls {
+            margin-top: 10px;
+            display: grid;
+            grid-template-columns: repeat(3, 55px);
+            gap: 5px;
+            justify-content: center;
+        }
+
+        button.ctrl-btn {
+            padding: 12px;
+            background-color: #e67e22;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button.ctrl-btn:active {
+            background-color: #d35400;
+        }
+
+        #reset-btn {
+            margin-top: 8px;
+            padding: 6px 15px;
+            background-color: #c0392b;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Simulasi Lalu Lintas Simpang 4</h1>
+    <p id="instruction">Seberangkan pejalan kaki (P) ke atas saat lampu Merah! Hindari menyeberang saat lampu Hijau.</p>
+
+    <div id="game-container">
+        <!-- Jalur Jalan -->
+        <div class="road-v"></div>
+        <div class="road-h"></div>
+        <div class="roundabout"></div>
+
+        <!-- Lampu Lalu Lintas -->
+        <div id="tl-north" class="traffic-light">
+            <div id="north-r" class="light"></div>
+            <div id="north-y" class="light"></div>
+            <div id="north-g" class="light"></div>
+        </div>
+        <div id="tl-south" class="traffic-light">
+            <div id="south-r" class="light"></div>
+            <div id="south-y" class="light"></div>
+            <div id="south-g" class="light"></div>
+        </div>
+        <div id="tl-east" class="traffic-light">
+            <div id="east-r" class="light"></div>
+            <div id="east-y" class="light"></div>
+            <div id="east-g" class="light"></div>
+        </div>
+        <div id="tl-west" class="traffic-light">
+            <div id="west-r" class="light"></div>
+            <div id="west-y" class="light"></div>
+            <div id="west-g" class="light"></div>
+        </div>
+
+        <!-- Pemain / Pejalan Kaki -->
+        <div id="player" class="character" style="top: 320px; left: 189px;">P</div>
+    </div>
+
+    <div id="ui-panel">
+        <div class="stat-box">Skor: <span id="score">0</span></div>
+        <div class="stat-box">Nyawa: <span id="lives">3</span></div>
+    </div>
+    
+    <div style="font-size: 13px; margin-top: 5px;">Status: <span id="status-text" style="color: #2ecc71; font-weight: bold;">Aman</span></div>
+
+    <!-- Tombol Navigasi Sentuh untuk HP -->
+    <div id="mobile-controls">
+        <div></div>
+        <button class="ctrl-btn" onclick="movePlayer('up')">⬆️</button>
+        <div></div>
+        <button class="ctrl-btn" onclick="movePlayer('left')">⬅️</button>
+        <button class="ctrl-btn" onclick="movePlayer('down')">⬇️</button>
+        <button class="ctrl-btn" onclick="movePlayer('right')">➡️</button>
+    </div>
+
+    <button id="reset-btn" onclick="resetGame()">Mulai Ulang</button>
+
+    <script>
+        let score = 0;
+        let lives = 3;
+        let playerX = 189;
+        let playerY = 320;
+        const playerSpeed = 15;
+
+        const playerEl = document.getElementById('player');
+        const scoreEl = document.getElementById('score');
+        const livesEl = document.getElementById('lives');
+        const statusEl = document.getElementById('status-text');
+
+        let currentLightState = 'GREEN'; 
+        
+        // Pengatur Lampu Otomatis
+        setInterval(() => {
+            if (currentLightState === 'GREEN') {
+                currentLightState = 'YELLOW';
+                setLights('yellow');
+                statusEl.innerText = "Kuning (Bersiap)";
+                statusEl.style.color = "#f1c40f";
+            } else if (currentLightState === 'YELLOW') {
+                currentLightState = 'RED';
+                setLights('red');
+                statusEl.innerText = "Merah (Waktu Seberang!)";
+                statusEl.style.color = "#e74c3c";
+            } else {
+                currentLightState = 'GREEN';
+                setLights('green');
+                statusEl.innerText = "Hijau (Kendaraan Jalan)";
+                statusEl.style.color = "#2ecc71";
+            }
+        }, 4000);
+
+        function setLights(color) {
+            document.querySelectorAll('.light').forEach(l => l.style.backgroundColor = '#555');
+            if (color === 'red') {
+                document.querySelectorAll('[id$="-r"]').forEach(l => l.style.backgroundColor = '#e74c3c');
+            } else if (color === 'yellow') {
+                document.querySelectorAll('[id$="-y"]').forEach(l => l.style.backgroundColor = '#f1c40f');
+            } else if (color === 'green') {
+                document.querySelectorAll('[id$="-g"]').forEach(l => l.style.backgroundColor = '#2ecc71');
+            }
+        }
+
+        setLights('green');
+
+        function movePlayer(direction) {
+            if (lives <= 0) return;
+            
+            if (direction === 'up') playerY -= playerSpeed;
+            if (direction === 'down') playerY += playerSpeed;
+            if (direction === 'left') playerX -= playerSpeed;
+            if (direction === 'right') playerX += playerSpeed;
+
+            playerX = Math.max(10, Math.min(368, playerX));
+            playerY = Math.max(10, Math.min(368, playerY));
+
+            playerEl.style.left = playerX + 'px';
+            playerEl.style.top = playerY + 'px';
+
+            checkGameLogic();
+        }
+
+        function checkGameLogic() {
+            // Berhasil menyeberang ke sisi atas
+            if (playerY < 120) {
+                score += 10;
+                scoreEl.innerText = score;
+                alert("Hebat! Berhasil menyeberang dengan aman (+10 Poin)");
+                resetPosition();
+            }
+
+            // Cek apakah menyeberang di tengah saat lampu hijau
+            const isInIntersection = (playerX > 120 && playerX < 270) && (playerY > 120 && playerY < 270);
+            if (isInIntersection && currentLightState === 'GREEN') {
+                lives--;
+                livesEl.innerText = lives;
+                alert("Bahaya! Jangan menyeberang saat lampu hijau kendaraan berjalan!");
+                resetPosition();
+
+                if (lives <= 0) {
+                    alert("Game Over! Skor Akhir Anda: " + score);
+                    resetGame();
+                }
+            }
+        }
+
+        function resetPosition() {
+            playerX = 189;
+            playerY = 320;
+            playerEl.style.left = playerX + 'px';
+            playerEl.style.top = playerY + 'px';
+        }
+
+        function resetGame() {
+            score = 0;
+            lives = 3;
+            scoreEl.innerText = score;
+            livesEl.innerText = lives;
+            resetPosition();
+        }
+    </script>
+</body>
+</html>
